@@ -13,24 +13,27 @@ import java.util.List;
 @RestController
 @RequestMapping("/api")
 public class CustomerOrderController {
-    private final CustomerRepository customerRepository;
-    private final OrderRepository orderRepository;
+    private final CustomerService customerService;
+    private final OrderService orderService;
 
-    public CustomerOrderController(CustomerRepository customerRepository, OrderRepository orderRepository) {
-        this.customerRepository = customerRepository;
-        this.orderRepository = orderRepository;
+    @Autowired
+    public CustomerOrderController(CustomerService customerService, OrderService orderService) {
+        this.customerService = customerService;
+        this.orderService = orderService;
     }
 
     @PostMapping("/customer-with-orders")
-    public ResponseEntity<String> createCustomerWithOrders(@Valid @RequestBody CustomerOrderRequest customerOrderRequest) {
-        // Check if customer already exists before saving
-        Customer savedCustomer = customerRepository.save(customerOrderRequest.getCustomer());
+    public ResponseEntity<String> createCustomerWithOrders(@RequestBody CustomerOrderRequest customerOrderRequest) {
 
-        // Link orders to the saved customer
-        for (Order order : customerOrderRequest.getOrders()) {
-            order.setCustomerId(savedCustomer.getId());  // Link order to the customer
-            orderRepository.save(order);  // Save the order
+        Customer savedCustomer = customerService.createCustomer(customerOrderRequest.getCustomer());
+        String customerId = savedCustomer.getId();
+
+        List<Order> orders = customerOrderRequest.getOrders();
+        for (Order order : orders) {
+            order.setCustomerId(customerId); // Link order to the customer
         }
+
+        orderService.createOrders(orders);
 
         return ResponseEntity.ok("Customer and orders created successfully");
     }
