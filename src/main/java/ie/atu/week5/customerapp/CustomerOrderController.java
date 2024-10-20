@@ -1,5 +1,6 @@
 package ie.atu.week5.customerapp;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,9 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api")
 public class CustomerOrderController {
-
     private final CustomerRepository customerRepository;
-
     private final OrderRepository orderRepository;
 
     public CustomerOrderController(CustomerRepository customerRepository, OrderRepository orderRepository) {
@@ -23,13 +22,15 @@ public class CustomerOrderController {
     }
 
     @PostMapping("/customer-with-orders")
-    public ResponseEntity<String> createCustomerWithOrders(@RequestBody CustomerOrderRequest customerOrderRequest) {
+    public ResponseEntity<String> createCustomerWithOrders(@Valid @RequestBody CustomerOrderRequest customerOrderRequest) {
+        // Check if customer already exists before saving
+        Customer savedCustomer = customerRepository.save(customerOrderRequest.getCustomer());
 
-        // 1. Save the Customer and get the generated customer ID
-
-
-        // 2. Save the Orders and link them to the customer
-
+        // Link orders to the saved customer
+        for (Order order : customerOrderRequest.getOrders()) {
+            order.setCustomerId(savedCustomer.getId());  // Link order to the customer
+            orderRepository.save(order);  // Save the order
+        }
 
         return ResponseEntity.ok("Customer and orders created successfully");
     }
