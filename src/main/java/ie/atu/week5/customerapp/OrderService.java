@@ -25,6 +25,10 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
+    public void createOrders(List<Order> orders) {
+        orderRepository.saveAll(orders); // Save all orders at once
+    }
+
     public boolean existsById(String id) {
         return orderRepository.existsById(id);
     }
