@@ -44,4 +44,20 @@ public class CustomerController {
         }
         return ResponseEntity.notFound().build();
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Customer> updateCustomer(@PathVariable String id, @Valid @RequestBody Customer customerDetails) {
+        Optional<Customer> optionalCustomer = customerService.getCustomerById(id);
+
+        if (!optionalCustomer.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Customer existingCustomer = optionalCustomer.get();
+        existingCustomer.setName(customerDetails.getName());
+        existingCustomer.setEmail(customerDetails.getEmail());
+
+        Customer updatedCustomer = customerService.createCustomer(existingCustomer);
+        return ResponseEntity.ok(updatedCustomer);
+    }
 }
